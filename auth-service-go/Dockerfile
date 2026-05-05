@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /auth-service ./cmd/auth-service/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o /auth-service ./cmd/auth-service/main.go
 
 FROM alpine:latest
 
