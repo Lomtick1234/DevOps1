@@ -12,4 +12,4 @@ COPY . .
 EXPOSE 5000
 
 
-ENTRYPOINT [ "python", "./main.py" ]
+CMD [ "python", "./main.py" ]

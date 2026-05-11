@@ -8,8 +8,8 @@ services:
                 condition: service_started
             backend-java:
                 condition: service_started
-            frontend-react:
-                condition: service_started
+            # frontend-react:
+            #     condition: service_started
 
     auth-service-go:
         build: ./auth-service-go
@@ -40,6 +40,9 @@ services:
         build: ./frontend-react
         expose:
             - "80"
+        depends_on:
+            nginx-gateway:
+                condition: service_started
 
     order-worker-python:
         build: ./order-worker-python

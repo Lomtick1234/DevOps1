@@ -3,20 +3,20 @@ kind: Deployment
 metadata:
     name: deployment
     labels:
-        service: service
+        service: kube-service
 spec:
     replicas: 2
     selector:
         matchLabels:
-            app: app
+            app: kube-app
     template:
         metadata:
             labels:
-                app: app
+                app: kube-app
         spec:
             containers:
-                - name: app
-                  image: thatonetoaster/app:v1
+                - name: kube-app
+                  image: thatonetoaster/kube-app:v1
                   envFrom:
                       - configMapRef:
-                            name: config-map
+                            name: kube-config-map
