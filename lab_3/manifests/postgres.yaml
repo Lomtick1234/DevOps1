@@ -1,0 +1,94 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  labels:
+    app: postgres-set
+spec:
+  clusterIP: None
+  selector:
+    app: postgres-set
+  ports:
+  - port: 5432
+    targetPort: 5432
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+data:
+  init.sql: |
+    create table if not exists messages (
+        id serial primary key,
+        text text not null
+    );
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+type: Opaque
+stringData:
+  db: db
+  user: app
+  pass: secret
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-set
+spec:
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-set
+  template:
+    metadata:
+      labels:
+        app: postgres-set
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:18.3-alpine3.23
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: db
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: pass
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql
+        - name: postgres-init
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: postgres-init
+        configMap:
+          name: postgres-init
+
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
